@@ -1,15 +1,11 @@
 # Standard library imports:
-import sys
 import argparse
 from itertools import permutations
+import time
 
 # Library imports:
 from sage.all import *
 
-
-
-def ruleCheck():
-    pass
 
 
 # Returns True if two quandles are isomorphic
@@ -17,30 +13,52 @@ def isomorphismCheck(quandle1, quandle2):
     # Can't be isomorphic if sizes don't match
     if quandle1.nrows() != quandle2.nrows() or quandle1.ncols() != quandle2.ncols():
         return False
-
-    values1 = list(set(quandle1.list()))
-    values2 = list(set(quandle2.list()))
     
-    # print(f"values1: {values1}")
-    # print(f"values2: {values2}")
+    n = quandle1.nrows()
 
-    # Get all permutations from 1 set to the other
-    # That will be all bijections from 1 set to the other. Also n! :((((((
+    # Make values match the index valuescomp (so I don't go insane with indexing)
+    valueMapping1 = dict()
+    valueMapping2 = dict()
+    for i in range(0, n):
+        valueMapping1[quandle1[i, i]] = i 
+        valueMapping2[quandle2[i, i]] = i 
+    
+    quandle1Mapped = Matrix(quandle1)
+    quandle2Mapped = Matrix(quandle2)
+    for i in range(0, n):
+        for j in range(0, n):
+            quandle1Mapped[i, j] = valueMapping1[quandle1[i, j]]
+            quandle2Mapped[i, j] = valueMapping2[quandle2[i, j]]
 
-    # Need to try every mapping between values1 and values2
+    values = range(0, n)
+
+    # Need to try every mapping between values
     # For every possible bijection between quandles
-    for perm in permutations(values2):
+    for perm in permutations(values):
         # Make a dict of mappings of index values
-        # Find value in diagonal. That is index value. Then permute rows/columns based on that mapping
-        mapping = dict(zip(values1, perm))
-        
-        # apply permutation to imageQuandle
-        # Need to reorder columns
-        # Iso check logic is not working right
-        imageQuandle = Matrix([[mapping[x] for x in row] for row in quandle1])
+        mapping = dict(zip(values, perm))
+        isomorphism = True
 
-        if imageQuandle == quandle2:
-            # If we have a bijective mapping, we're good
+        # Check each column to see if it is correct under map
+        for y in range(0, n):
+            f_y = mapping[y]
+
+            S_y = quandle1Mapped.column(y)
+            S_fy = quandle2Mapped.column(f_y)
+
+            # f o S_y = S_f(y) o f
+            # Compose with permutation
+            # for elements in S_y
+            #   Save mapping[S_y] in its place
+            image1 = [ mapping[x] for x in S_y ]
+            # For elements in f map to where S_fy
+            image2 = [ S_fy[mapping[x]] for x in values]
+
+            if image1 != image2:
+                isomorphism = False
+                break
+
+        if isomorphism == True:
             return True
 
     return False
@@ -76,7 +94,6 @@ def isCohen(quandle):
 
     if len(orbits) < 2:
         # Must have at least 2 orbits
-        # print("Not enough orbits")
         return False
 
     # Add a check for orbit sizes?? - Might save some time
@@ -86,13 +103,9 @@ def isCohen(quandle):
 
     for orbit in orbits:
         # Remove rows and columns of orbit
-        keep = [i for i in range(quandle.nrows()) if (i + 1) not in orbit]
+        keep = [i for i in range(0, quandle.nrows()) if (i + 1) not in orbit]
         subQ = quandle.matrix_from_rows(keep).matrix_from_columns(keep)
         subQuandles.append(subQ)
-
-    # print("SubQuandles: ")
-    # for q in subQuandles:
-    #     print(q, "\n")
 
     # Check if all are isomorphic
     for i in range (0, len(subQuandles) - 1):
@@ -100,18 +113,6 @@ def isCohen(quandle):
             return False
 
     return True
-
-
-def cohenRules():
-    # Check if current orbit is too long? ie longer than factors of n
-    # Current row can only have less than factors of n
-
-    pass
-
-
-def verifyAxiom2(quandle, i, j):
-    # Iterate through column and see if new value is repeated.
-    pass
 
 
 def verifyAxiom3(quandle) -> bool:
@@ -154,7 +155,7 @@ def generate(quandle, i, j):
         # Add quandle to output list
         if verifyAxiom3(quandle):
             for q in valid:
-                if False: #isomorphismCheck(q, quandle):
+                if isomorphismCheck(q, quandle):
                     return
             valid.append(quandle)
         return
@@ -199,23 +200,25 @@ if __name__ == '__main__':
 
     valid = list()
 
+    start_time = time.perf_counter()
+
     # Axiom 1: Generate idempotency along diagonal:
     quandle = Matrix(ZZ, n, n, lambda i, j: i + 1 if i == j else -1)
     generate(quandle, 0, 0)
     
+    duration = time.perf_counter() - start_time
+
+    count = 0
     for M in valid:
-        if True: #isCohen(M):
+        if isCohen(M):
             print(findOrbits(M))
             print(M, "\n")
+            count += 1
 
     print(f"There are {len(valid)} quandles of order {n}")
+    print(f"{count} of them are Cohen quandles")
+    print(f"Generation took {duration} seconds")
 
     if args.save:
         # Save to file logic here
         pass 
-
-    # M1 = matrix([[1, 2],
-    #             [1, 2]])
-    # M2 = matrix([[3, 4],
-    #             [6, 4]])
-    # print(isomorphismCheck(M1, M2))
