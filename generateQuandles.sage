@@ -2,6 +2,8 @@
 import argparse
 from itertools import permutations
 import time
+import ast
+import re
 
 # Library imports:
 from sage.all import *
@@ -14,6 +16,11 @@ def isomorphismCheck(quandle1, quandle2):
     if quandle1.nrows() != quandle2.nrows() or quandle1.ncols() != quandle2.ncols():
         return False
     
+
+    # Perform a precheck based on invariants **HERE**
+    # **TODO**
+
+
     n = quandle1.nrows()
 
     # Make values match the index valuescomp (so I don't go insane with indexing)
@@ -25,6 +32,8 @@ def isomorphismCheck(quandle1, quandle2):
     
     quandle1Mapped = Matrix(quandle1)
     quandle2Mapped = Matrix(quandle2)
+    # print(quandle1)
+    # print(valueMapping1)
     for i in range(0, n):
         for j in range(0, n):
             quandle1Mapped[i, j] = valueMapping1[quandle1[i, j]]
@@ -66,6 +75,7 @@ def isomorphismCheck(quandle1, quandle2):
 
 def findOrbits(quandle):
     orbits = list()
+    n = quandle.nrows()
 
     for row in range(0, n):
         # find orbit with our row in it
@@ -78,10 +88,13 @@ def findOrbits(quandle):
 
         # See if orbit has new elements to add to existing orbit
         new = True
-        for existingOrbit in orbits:
-            if orbit & existingOrbit:
-                existingOrbit = orbit | existingOrbit
+        for i in range(0, len(orbits)):
+            if orbit & orbits[i]:
+                # print("here ", existingOrbit, " ", orbit)
+                orbits[i] = orbit | orbits[i]
+                # print(existingOrbit)
                 new = False
+                break
 
         if new:
             orbits.append(orbit)
@@ -103,12 +116,13 @@ def isCohen(quandle):
 
     for orbit in orbits:
         # Remove rows and columns of orbit
-        keep = [i for i in range(0, quandle.nrows()) if (i + 1) not in orbit]
+        keep = [i for i in range(0, quandle.nrows()) if i not in orbit]
         subQ = quandle.matrix_from_rows(keep).matrix_from_columns(keep)
         subQuandles.append(subQ)
 
     # Check if all are isomorphic
     for i in range (0, len(subQuandles) - 1):
+        # print('\n', quandle)
         if not isomorphismCheck(subQuandles[i], subQuandles[i+1]):
             return False
 
@@ -116,14 +130,15 @@ def isCohen(quandle):
 
 
 def verifyAxiom3(quandle) -> bool:
+    # For all x, y, z, (x * y) * z = (x * z) * (y * z)
     for x in range(0, n):
         for y in range(0, n):
             for z in range(0, n):
-                x_y = quandle[x, y] - 1
+                x_y = quandle[x, y]
                 result = quandle[x_y, z]
 
-                x_z = quandle[x, z] - 1
-                y_z = quandle[y, z] - 1
+                x_z = quandle[x, z]
+                y_z = quandle[y, z]
 
                 if result != quandle[x_z, y_z]:
                     return False
@@ -131,30 +146,79 @@ def verifyAxiom3(quandle) -> bool:
     return True
 
 
+def inverseOperation(quandle, i, j):
+    for r in range(0, quandle.nrows()):
+        if quandle[r, j] == i:
+            return r
+    return -1
+
+# Will need to try to explore the most beneficial states first (ie the ones that lead to us filling in many spaces)
 def validCheck(quandle, i, j) -> bool:
-    v = quandle[i, j]
+    k = quandle[i, j]
 
     # Axiom 2: Ensure operation is bijective (no repeating in columns)
     for c in range(0, n):
         # Matching element (ignoring our column)
-        if c != i and v == quandle[c, j]:
+        if c != i and k == quandle[c, j]:
                 return False
     
+    # Verify all 3 rules that this will lead to a valid Quandle
+    
     # Rule 1:
+    # First conditional eliminates too many
+    # Other two can add duplicate values to a column
+    for a in range(0, n):
+        k_a = quandle[k, a]
+        j_a = quandle[j, a]
+        i_a = quandle[i, a]
+
+        if j_a == -1 or i_a == -1:
+            continue
+
+        i_a_j_a = quandle[i_a, j_a]
+        
+
+        # if i_a_j_a == -1 and k_a != -1:
+        #     # Case 1
+        #     # What row contains the value k_a in the i_a th column
+        #     if inverseOperation(quandle, k_a, i_a) != -1:
+        #         #Invalid
+        #         return False # False positives
+        #     else:
+        #         quandle[i_a_j_a] = k_a
+
+        # if i_a_j_a != -1 and k_a == -1:
+        #     # Case 2
+        #     if inverseOperation(quandle, i_a_j_a, a) != -1:
+        #         return False
+        #     else:
+        #         quandle[k_a] = i_a_j_a # Does not respect bijectivity of column
+        
+        if i_a_j_a != -1 and k_a != -1:
+            if i_a_j_a != k_a:
+                return False
+
 
     # Rule 2:
 
+
     # Rule 3:
+
+
+    # Cohen check
+        # Ensure size of largest orbit * # orbits <= n (order of quandle)
+        # Something with ensuring "finshed" orbits must be factors of n?
+
 
     return True
 
 
 def generate(quandle, i, j):
-    # Base Case: Matrix is full
+    # Base Case: We've reached end of matrix (ie no more positions to fill)
     if (i >= n): 
-        # Add quandle to output list
+        # Verify complete table satisfies axiom 3
         if verifyAxiom3(quandle):
-            for q in valid:
+            for q in valid: # Compare with already found to see if duplicate
                 if isomorphismCheck(q, quandle):
                     return
             valid.append(quandle)
@@ -167,7 +231,7 @@ def generate(quandle, i, j):
         generate(quandle, nextI, nextJ)
         return
 
-    for v in range(1, n + 1):
+    for v in range(0, n):
         newQuandle = Matrix(quandle)
         newQuandle[i, j] = v
         if validCheck(newQuandle, i, j): # Fill in and verify potential based on axioms
@@ -176,49 +240,95 @@ def generate(quandle, i, j):
     return
 
 
+def readFile(inputFile):
+    with open(inputFile, 'r') as file:
+        text = file.read()
+
+    text = re.sub(r'printf\(.*?\);?\s*', '', text)
+    text = re.sub(r'\w+:=map\(Matrix,', '', text)
+    text = text.rstrip(':; \n')
+    text = text.rstrip('):')
+
+
+    data = ast.literal_eval(text)
+
+    matrices = [Matrix(m) for m in data]
+    return matrices
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "-s", "--save",
-        action="store_true",
+        "-o", "--output",
         help="Save quandles to file"
     )
 
     parser.add_argument(
         "-n", "--order",
-        required=True,
-        help="Order of quandle to generate"
+        #required=True,
+        help="Order of quandles to generate"
     )
     
+    parser.add_argument(
+        "-f", "--file",
+        help="Path to input file"
+    )
+
     args = parser.parse_args()
 
-    n = int(args.order)
 
-    print(f"Generating all Quandles of order {n} ....")
+    cohen = list()
 
-    valid = list()
+    if args.file != None:
+        quandles = readFile(args.file)
+        for q in quandles:
+            ones = Matrix(q.nrows(), q.nrows(), lambda i, j: 1)
+            tmp = q - Matrix(q.nrows(), q.nrows(), ones)
+            if isCohen(tmp):
+                cohen.append(q)
 
-    start_time = time.perf_counter()
+    else:
+        n = int(args.order)
+        print(f"Generating all Quandles of order {n} ....")
 
-    # Axiom 1: Generate idempotency along diagonal:
-    quandle = Matrix(ZZ, n, n, lambda i, j: i + 1 if i == j else -1)
-    generate(quandle, 0, 0)
-    
-    duration = time.perf_counter() - start_time
+        valid = list()
 
-    count = 0
-    for M in valid:
-        if isCohen(M):
+        start_time = time.perf_counter()
+
+        # Axiom 1: Generate idempotency along diagonal:
+        quandle = Matrix(ZZ, n, n, lambda i, j: i if i == j else -1)
+        generate(quandle, 0, 0)
+        
+        duration = time.perf_counter() - start_time
+
+        count = 0
+        for M in valid:
             print(findOrbits(M))
-            print(M, "\n")
-            count += 1
+            print(M)
+            if isCohen(M):
+                print("Is Cohen")
+                cohen.append(M)
+            print()
 
-    print(f"There are {len(valid)} quandles of order {n}")
-    print(f"{count} of them are Cohen quandles")
-    print(f"Generation took {duration} seconds")
+        print(f"There are {len(valid)} quandles of order {n}")
+        print(f"Generation took {duration} seconds")
 
-    if args.save:
-        # Save to file logic here
-        pass 
+
+    if args.output != None:
+        with open(args.output, 'w') as file:
+            file.write(f"There are {len(cohen)} Cohen quandles of order {cohen[0].nrows()}\n\n")
+            for c in cohen:
+                file.write(str(findOrbits(c)))
+                file.write("\n")
+                file.write(str(c))
+                file.write("\n\n")
+
+    for c in cohen:
+        print(c, '\n')
+
+
+    print(f"{len(cohen)} of them are Cohen quandles")        
+
+    
+        
