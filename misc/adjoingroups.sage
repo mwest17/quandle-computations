@@ -12,7 +12,7 @@ relations = []
 for i in range(0, 2*n):
     for j in range(i+1, 2*n+1):
         # print(f"{i} * {j}")
-        i_x_j = (3*(i+j)) % (2*n+1)
+        i_x_j = ((n+1)*(i+j)) % (2*n+1)
 
         a_ixj = generators[i_x_j]
         a_i = generators[i]
