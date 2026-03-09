@@ -256,6 +256,19 @@ def readFile(inputFile):
     return matrices
 
 
+
+def readOrder9(filename):
+    with open(filename) as f:
+        text = f.read()
+
+    # Extract every [[ ... ]] block
+    matrices = re.findall(r'\[\[(?:.|\n)*?\]\]', text)
+
+    # Convert each to a Sage matrix
+    return [Matrix(ast.literal_eval(m)) for m in matrices]
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -279,14 +292,17 @@ if __name__ == '__main__':
 
 
     cohen = list()
+    index = list()
 
     if args.file != None:
         quandles = readFile(args.file)
-        for q in quandles:
+        for i in range(len(quandles)):
+            q = quandles[i]
             ones = Matrix(q.nrows(), q.nrows(), lambda i, j: 1)
             tmp = q - Matrix(q.nrows(), q.nrows(), ones)
             if isCohen(tmp):
                 cohen.append(q)
+                index.append(i)
 
     else:
         n = int(args.order)
@@ -318,10 +334,13 @@ if __name__ == '__main__':
     if args.output != None:
         with open(args.output, 'w') as file:
             file.write(f"There are {len(cohen)} Cohen quandles of order {cohen[0].nrows()}\n\n")
-            for c in cohen:
+            for i in range(len(cohen)):
+                c = cohen[i]
                 file.write(str(findOrbits(c)))
                 file.write("\n")
                 file.write(str(c))
+                if args.file != None:
+                    file.write(f"\nIndex: {index[i] + 1}")
                 file.write("\n\n")
 
     for c in cohen:
@@ -329,6 +348,3 @@ if __name__ == '__main__':
 
 
     print(f"{len(cohen)} of them are Cohen quandles")        
-
-    
-        
