@@ -8,7 +8,8 @@ import re
 # Library imports:
 from sage.all import *
 
-
+# Number of times that generate function is called
+recursionCount = 0
 
 # Returns True if two quandles are isomorphic
 def isomorphismCheck(quandle1, quandle2):
@@ -18,7 +19,10 @@ def isomorphismCheck(quandle1, quandle2):
     
 
     # Perform a precheck based on invariants **HERE**
-    # **TODO**
+    orbits1 = findOrbits(quandle1)
+    orbits2 = findOrbits(quandle2)
+    if len(orbits1) != len(orbits2):
+        return False
 
 
     n = quandle1.nrows()
@@ -43,6 +47,9 @@ def isomorphismCheck(quandle1, quandle2):
 
     # Need to try every mapping between values
     # For every possible bijection between quandles
+    
+    # We only care about permutations between orbits!!! Orbits must be mapped to another orbit
+    # Orbits are mapped entirely to orbits under isomorphism
     for perm in permutations(values):
         # Make a dict of mappings of index values
         mapping = dict(zip(values, perm))
@@ -83,13 +90,14 @@ def findOrbits(quandle):
 
         for col in range(0,n):
             v = quandle[row, col]
-            if v != -1:
-                orbit.add(v)
+            #if v != -1:
+            orbit.add(v)
 
         # See if orbit has new elements to add to existing orbit
         new = True
         for i in range(0, len(orbits)):
-            if orbit & orbits[i]:
+            intersection = orbit & orbits[i]
+            if intersection and (len(intersection) > 1 or -1 not in intersection):
                 # print("here ", existingOrbit, " ", orbit)
                 orbits[i] = orbit | orbits[i]
                 # print(existingOrbit)
@@ -152,21 +160,33 @@ def inverseOperation(quandle, i, j):
             return r
     return -1
 
+def verifyAxiom2(quandle, i, j):
+    k = quandle[i, j]
+
+    # Axiom 2: Ensure operation is bijective (no repeating in columns)
+    for c in range(0, n):
+        # Matching element (ignoring our row)
+        if c != i and k == quandle[c, j]:
+                return False
+    return True
+    
+
 # Will need to try to explore the most beneficial states first (ie the ones that lead to us filling in many spaces)
 def validCheck(quandle, i, j) -> bool:
     k = quandle[i, j]
 
     # Axiom 2: Ensure operation is bijective (no repeating in columns)
-    for c in range(0, n):
-        # Matching element (ignoring our column)
-        if c != i and k == quandle[c, j]:
-                return False
+    if not verifyAxiom2(quandle, i, j):
+        return False
     
     # Verify all 3 rules that this will lead to a valid Quandle
     
+    # print("\n", quandle)
+
     # Rule 1:
     # First conditional eliminates too many
     # Other two can add duplicate values to a column
+    # print(quandle, "\n")
     for a in range(0, n):
         k_a = quandle[k, a]
         j_a = quandle[j, a]
@@ -178,37 +198,179 @@ def validCheck(quandle, i, j) -> bool:
         i_a_j_a = quandle[i_a, j_a]
         
 
-        # if i_a_j_a == -1 and k_a != -1:
-        #     # Case 1
-        #     # What row contains the value k_a in the i_a th column
-        #     if inverseOperation(quandle, k_a, i_a) != -1:
-        #         #Invalid
-        #         return False # False positives
-        #     else:
-        #         quandle[i_a_j_a] = k_a
+        if i_a_j_a == -1 and k_a != -1:
+            # Case 1
+            # What row contains the value k_a in the i_a th column
+            # if inverseOperation(quandle, k_a, i_a) != -1:
+            #     # print(f"{k_a} -* {i_a} = {inverseOperation(quandle, k_a, i_a)}")
+            #     #Invalid
+            #     return False # False positives
+            # else:
+            quandle[i_a, j_a] = k_a
+            if not verifyAxiom2(quandle, i_a, j_a):
+                    return False
 
-        # if i_a_j_a != -1 and k_a == -1:
-        #     # Case 2
-        #     if inverseOperation(quandle, i_a_j_a, a) != -1:
-        #         return False
-        #     else:
-        #         quandle[k_a] = i_a_j_a # Does not respect bijectivity of column
+        if i_a_j_a != -1 and k_a == -1:
+            # Case 2
+            # if inverseOperation(quandle, i_a_j_a, a) != -1:
+            #     return False
+            # else:
+            quandle[k, a] = i_a_j_a # Does not respect bijectivity of column
+            if not verifyAxiom2(quandle, k, a):
+                    return False
         
         if i_a_j_a != -1 and k_a != -1:
             if i_a_j_a != k_a:
                 return False
 
-
     # Rule 2:
+    for a in range (0, n):
+        a_i = quandle[a, i]
+        a_j = quandle[a, j]
+
+        if a_i == -1 or a_j == -1:
+            continue
+
+        a_i_j = quandle[a_i, j]
+        a_j_k = quandle[a_j, k]
+
+        if a_j_k == -1 and a_i_j != -1:
+            if inverseOperation(quandle, a_i_j, k) != -1:
+                return False
+            else:
+                quandle[a_j, k] = a_i_j
+
+        if a_j_k != -1 and a_i_j == -1:
+            if inverseOperation(quandle, a_j_k, j) != -1:
+                return False
+            else:
+                quandle[a_i, j] = a_j_k
+
+        if a_j_k != -1 and a_i_j != -1:
+            if a_i_j != a_j_k:
+                return False
 
 
     # Rule 3:
+    for a in range(0, n):
+        i_a = quandle[i, a]
+        a_j = quandle[a, j]
 
+        if i_a == -1 or a_j == -1:
+            continue
+
+        i_a_j = quandle[i_a, j]
+        k_a_j = quandle[k, a_j]
+
+        if k_a_j == -1 and i_a_j != -1:
+            if inverseOperation(quandle, i_a_j, a_j) != -1:
+                return False
+            else:
+                quandle[k, a_j] = i_a_j
+
+        if k_a_j != -1 and i_a_j == -1:
+            if inverseOperation(quandle, k_a_j, j) != -1:
+                return False
+            else:
+                quandle[i_a, j] = k_a_j
+
+        if k_a_j != -1 and i_a_j != -1:
+            if i_a_j != k_a_j:
+                return False
+
+
+    # Rule 4:
+    for a in range(0, n):
+        i_inv_a = inverseOperation(quandle, i, a)
+        j_inv_a = inverseOperation(quandle, j, a)
+
+        if i_inv_a == -1 or j_inv_a == -1:
+            continue
+
+        i_inv_a_j_inv_a = quandle[i_inv_a, j_inv_a]
+
+        if i_inv_a_j_inv_a == -1:
+            continue
+
+        i_inv_a_j_inv_a_a = quandle[i_inv_a_j_inv_a, a]
+
+        if i_inv_a_j_inv_a_a == -1:
+            if inverseOperation(quandle, k, a) != -1:
+                return False
+            else:
+                quandle[i_inv_a_j_inv_a, a] = k
+        else:
+            if i_inv_a_j_inv_a_a != k:
+                return False
+
+
+    # Rule 5:
+    for a in range(0, n):
+        i_inv_a = inverseOperation(quandle, i, a)
+        a_j = quandle[a, j]
+
+        if i_inv_a == -1 or a_j == -1:
+            continue
+
+        i_inv_a_j = quandle[i_inv_a, j]
+        if i_inv_a_j == -1:
+            continue
+
+        i_inv_a_j_a_i = quandle[i_inv_a_j, a_j]
+
+        if i_inv_a_j_a_i == -1:
+            if inverseOperation(quandle, k, a_j) != -1:
+                return False
+            else:
+                quandle[i_inv_a_j, a_j] = k
+        else:
+            if i_inv_a_j_a_i != k:
+                return False
+        
 
     # Cohen check
         # Ensure size of largest orbit * # orbits <= n (order of quandle)
         # Something with ensuring "finshed" orbits must be factors of n?
 
+    # orbits = findOrbits(quandle)
+    # finishedSize = 0
+    # largestIncomplete = 0
+    # completedOrbits = list()
+    # for orb in orbits:
+    #     orbSize = len(orb)
+    #     if -1 in orb:
+    #         largestIncomplete = max(largestIncomplete, orbSize - 1)
+    #     else:
+    #         completedOrbits.append(orb)
+
+    #         if finishedSize == 0:
+    #             finishedSize = orbSize
+
+    #         if orbSize != finishedSize:
+    #             return False
+    
+    # # If we don't have any finished orbits
+    # if finishedSize == 0:
+    #     finishedSize = largestFactor
+
+    # # If not a multiple, then not good
+    # if n % finishedSize != 0: 
+    #     return False
+
+    # # Ensure all incomplete can still be made to be correct size
+    # if largestIncomplete > finishedSize:
+    #     return False
+    
+    # # If we have more than 2 finisihed, check that X\O is isomorphic
+    # # This would be a lot of repeated computations!!!!!
+    # for i in range(1, len(completedOrbits)):
+    #     O_1 = completedOrbits[i-1]
+    #     O_2 = completedOrbits[i]
+
+    #     # Compute X\O1 and X\O2
+
+    #     # Check if they are isomorphic
+    #         # If not, return False
 
     return True
 
@@ -218,11 +380,22 @@ def generate(quandle, i, j):
     if (i >= n): 
         # Verify complete table satisfies axiom 3
         if verifyAxiom3(quandle):
+
+            # # NEED TO FIX. Probably has to do with rules
+            # for r in range(0, n):
+            #     for c in range(0, n):
+            #         if not verifyAxiom2(quandle, r, c):
+            #             return 
+                    
             for q in valid: # Compare with already found to see if duplicate
                 if isomorphismCheck(q, quandle):
                     return
             valid.append(quandle)
         return
+
+    # Increase count of generate calls
+    global recursionCount
+    recursionCount = recursionCount + 1
 
     nextJ = (j + 1) % n
     nextI = i + (1 if (nextJ == 0) else 0) # If we've reached end of the row, go down to next row
@@ -231,8 +404,9 @@ def generate(quandle, i, j):
         generate(quandle, nextI, nextJ)
         return
 
+
     for v in range(0, n):
-        newQuandle = Matrix(quandle)
+        newQuandle = Matrix(quandle) # Slow
         newQuandle[i, j] = v
         if validCheck(newQuandle, i, j): # Fill in and verify potential based on axioms
             generate(newQuandle, nextI, nextJ)
@@ -268,7 +442,6 @@ def readOrder9(filename):
     return [Matrix(ast.literal_eval(m)) for m in matrices]
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -290,7 +463,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
     cohen = list()
     index = list()
 
@@ -308,6 +480,11 @@ if __name__ == '__main__':
         n = int(args.order)
         print(f"Generating all Quandles of order {n} ....")
 
+        largestFactor = 1
+        for i in range(2, n):
+            if n % i == 0:
+                largestFactor = i
+
         valid = list()
 
         start_time = time.perf_counter()
@@ -320,12 +497,12 @@ if __name__ == '__main__':
 
         count = 0
         for M in valid:
-            print(findOrbits(M))
+            # print(findOrbits(M))
             print(M)
-            if isCohen(M):
-                print("Is Cohen")
-                cohen.append(M)
-            print()
+            # if isCohen(M):
+                # print("Is Cohen")
+            cohen.append(M)
+            # print()
 
         print(f"There are {len(valid)} quandles of order {n}")
         print(f"Generation took {duration} seconds")
@@ -348,3 +525,4 @@ if __name__ == '__main__':
 
 
     print(f"{len(cohen)} of them are Cohen quandles")        
+    print(f"generate() was called {recursionCount} times")
