@@ -11,12 +11,12 @@ from sage.all import *
 # Number of times that generate function is called
 recursionCount = 0
 
+
 # Returns True if two quandles are isomorphic
 def isomorphismCheck(quandle1, quandle2):
     # Can't be isomorphic if sizes don't match
     if quandle1.nrows() != quandle2.nrows() or quandle1.ncols() != quandle2.ncols():
         return False
-    
 
     # Perform a precheck based on invariants **HERE**
     orbits1 = findOrbits(quandle1)
@@ -117,9 +117,6 @@ def isCohen(quandle):
         # Must have at least 2 orbits
         return False
 
-    # Add a check for orbit sizes?? - Might save some time
-    # Might also be negligable since this is so asymptoptically large
-
     subQuandles = list()
 
     for orbit in orbits:
@@ -127,6 +124,8 @@ def isCohen(quandle):
         keep = [i for i in range(0, quandle.nrows()) if i not in orbit]
         subQ = quandle.matrix_from_rows(keep).matrix_from_columns(keep)
         subQuandles.append(subQ)
+        print(subQ)
+        print()
 
     # Check if all are isomorphic
     for i in range (0, len(subQuandles) - 1):
@@ -172,7 +171,7 @@ def verifyAxiom2(quandle, i, j):
     
 
 # Will need to try to explore the most beneficial states first (ie the ones that lead to us filling in many spaces)
-def validCheck(quandle, i, j) -> bool:
+def validCheck(quandle, i, j, filledIn) -> bool:
     k = quandle[i, j]
 
     # Axiom 2: Ensure operation is bijective (no repeating in columns)
@@ -207,6 +206,8 @@ def validCheck(quandle, i, j) -> bool:
             #     return False # False positives
             # else:
             quandle[i_a, j_a] = k_a
+            filledIn.append((i_a, j_a))
+
             if not verifyAxiom2(quandle, i_a, j_a):
                     return False
 
@@ -216,6 +217,7 @@ def validCheck(quandle, i, j) -> bool:
             #     return False
             # else:
             quandle[k, a] = i_a_j_a # Does not respect bijectivity of column
+            filledIn.append((k, a))
             if not verifyAxiom2(quandle, k, a):
                     return False
         
@@ -239,12 +241,14 @@ def validCheck(quandle, i, j) -> bool:
                 return False
             else:
                 quandle[a_j, k] = a_i_j
+                filledIn.append((a_j, k))
 
         if a_j_k != -1 and a_i_j == -1:
             if inverseOperation(quandle, a_j_k, j) != -1:
                 return False
             else:
                 quandle[a_i, j] = a_j_k
+                filledIn.append((a_i, j))
 
         if a_j_k != -1 and a_i_j != -1:
             if a_i_j != a_j_k:
@@ -267,12 +271,14 @@ def validCheck(quandle, i, j) -> bool:
                 return False
             else:
                 quandle[k, a_j] = i_a_j
+                filledIn.append((k, a_j))
 
         if k_a_j != -1 and i_a_j == -1:
             if inverseOperation(quandle, k_a_j, j) != -1:
                 return False
             else:
                 quandle[i_a, j] = k_a_j
+                filledIn.append((i_a, j))
 
         if k_a_j != -1 and i_a_j != -1:
             if i_a_j != k_a_j:
@@ -299,6 +305,7 @@ def validCheck(quandle, i, j) -> bool:
                 return False
             else:
                 quandle[i_inv_a_j_inv_a, a] = k
+                filledIn.append((i_inv_a_j_inv_a, a))
         else:
             if i_inv_a_j_inv_a_a != k:
                 return False
@@ -323,54 +330,55 @@ def validCheck(quandle, i, j) -> bool:
                 return False
             else:
                 quandle[i_inv_a_j, a_j] = k
+                filledIn.append((i_inv_a_j, a_j))
         else:
             if i_inv_a_j_a_i != k:
                 return False
         
 
     # Cohen check
-        # Ensure size of largest orbit * # orbits <= n (order of quandle)
-        # Something with ensuring "finshed" orbits must be factors of n?
+    #     Ensure size of largest orbit * # orbits <= n (order of quandle)
+    #     Something with ensuring "finshed" orbits must be factors of n?
 
-    # orbits = findOrbits(quandle)
-    # finishedSize = 0
-    # largestIncomplete = 0
-    # completedOrbits = list()
-    # for orb in orbits:
-    #     orbSize = len(orb)
-    #     if -1 in orb:
-    #         largestIncomplete = max(largestIncomplete, orbSize - 1)
-    #     else:
-    #         completedOrbits.append(orb)
+    orbits = findOrbits(quandle)
+    finishedSize = 0
+    largestIncomplete = 0
+    completedOrbits = list()
+    for orb in orbits:
+        orbSize = len(orb)
+        if -1 in orb:
+            largestIncomplete = max(largestIncomplete, orbSize - 1)
+        else:
+            completedOrbits.append(orb)
 
-    #         if finishedSize == 0:
-    #             finishedSize = orbSize
+            if finishedSize == 0:
+                finishedSize = orbSize
 
-    #         if orbSize != finishedSize:
-    #             return False
+            if orbSize != finishedSize:
+                return False
     
-    # # If we don't have any finished orbits
-    # if finishedSize == 0:
-    #     finishedSize = largestFactor
+    # If we don't have any finished orbits
+    if finishedSize == 0:
+        finishedSize = largestFactor
 
-    # # If not a multiple, then not good
-    # if n % finishedSize != 0: 
-    #     return False
+    # If not a multiple, then not good
+    if n % finishedSize != 0: 
+        return False
 
-    # # Ensure all incomplete can still be made to be correct size
-    # if largestIncomplete > finishedSize:
-    #     return False
+    # Ensure all incomplete can still be made to be correct size
+    if largestIncomplete > finishedSize:
+        return False
     
-    # # If we have more than 2 finisihed, check that X\O is isomorphic
-    # # This would be a lot of repeated computations!!!!!
-    # for i in range(1, len(completedOrbits)):
-    #     O_1 = completedOrbits[i-1]
-    #     O_2 = completedOrbits[i]
+    # If we have more than 2 finisihed, check that X\O is isomorphic
+    # This would be a lot of repeated computations!!!!!
+    for i in range(1, len(completedOrbits)):
+        O_1 = completedOrbits[i-1]
+        O_2 = completedOrbits[i]
 
-    #     # Compute X\O1 and X\O2
+        # Compute X\O1 and X\O2
 
-    #     # Check if they are isomorphic
-    #         # If not, return False
+        # Check if they are isomorphic
+            # If not, return False
 
     return True
 
@@ -390,7 +398,7 @@ def generate(quandle, i, j):
             for q in valid: # Compare with already found to see if duplicate
                 if isomorphismCheck(q, quandle):
                     return
-            valid.append(quandle)
+            valid.append(Matrix(quandle))
         return
 
     # Increase count of generate calls
@@ -404,12 +412,17 @@ def generate(quandle, i, j):
         generate(quandle, nextI, nextJ)
         return
 
-
+    filledIn = list()
     for v in range(0, n):
-        newQuandle = Matrix(quandle) # Slow
-        newQuandle[i, j] = v
-        if validCheck(newQuandle, i, j): # Fill in and verify potential based on axioms
-            generate(newQuandle, nextI, nextJ)
+        # Make a list of (i,j) indecies where new values are added
+        quandle[i, j] = v
+        if validCheck(quandle, i, j, filledIn): # Fill in and verify potential based on axioms
+            generate(quandle, nextI, nextJ)
+
+        while filledIn:
+            r, c = filledIn.pop()
+            quandle[r, c] = -1
+    quandle[i, j] = -1
     
     return
 
@@ -487,6 +500,10 @@ if __name__ == '__main__':
 
         valid = list()
 
+        import cProfile
+
+        profiler = cProfile.Profile()
+        profiler.enable()
         start_time = time.perf_counter()
 
         # Axiom 1: Generate idempotency along diagonal:
@@ -498,11 +515,22 @@ if __name__ == '__main__':
         count = 0
         for M in valid:
             # print(findOrbits(M))
-            print(M)
-            # if isCohen(M):
+            # print(M)
+            if isCohen(M):
                 # print("Is Cohen")
-            cohen.append(M)
+                cohen.append(M)
             # print()
+
+        profiler.disable()
+        profiler.dump_stats("data.prof")
+
+        import pstats
+        stats = pstats.Stats(profiler)
+        stats.strip_dirs()      # Remove full library paths
+        # stats.sort_stats("cumulative")  # Sort by total time spent (including called functions)
+        stats.sort_stats("tottime")
+        stats.print_stats(20)   # Print top 20 functions
+
 
         print(f"There are {len(valid)} quandles of order {n}")
         print(f"Generation took {duration} seconds")
@@ -520,8 +548,8 @@ if __name__ == '__main__':
                     file.write(f"\nIndex: {index[i] + 1}")
                 file.write("\n\n")
 
-    for c in cohen:
-        print(c, '\n')
+    # for c in cohen:
+    #     print(c, '\n')
 
 
     print(f"{len(cohen)} of them are Cohen quandles")        

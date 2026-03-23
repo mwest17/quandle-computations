@@ -4,6 +4,7 @@ import time
 import multiprocessing as mp
 import argparse
 import os
+import copy
 
 from generateQuandles import isCohen, findOrbits
 
@@ -44,8 +45,7 @@ def processFunc(inputQueue, outputQueue, n):
           # Check Cohen
           # print(quandle)
           if isCohen(quandle):
-               # print("is cohen")
-               outputQueue.put(Matrix(quandle))
+               outputQueue.put(copy.deepcopy(quandle))
 
           number += 1
           print(f"{pid}: Processed {number}")
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
      # Make 16 processes
      inputQueue = mp.Queue(maxsize = 30000)
-     numProcess = 25
+     numProcess = 16
      workers = []
      for _ in range(numProcess):
           p = mp.Process(target=processFunc, args=(inputQueue, outputQueue, n))

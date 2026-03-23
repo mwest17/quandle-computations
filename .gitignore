@@ -1,2 +1,4 @@
 input/ListQuandlesOrder*.txt
 *.sage.py
+
+__pycache__/*
