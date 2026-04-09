@@ -124,8 +124,8 @@ def isCohen(quandle):
         keep = [i for i in range(0, quandle.nrows()) if i not in orbit]
         subQ = quandle.matrix_from_rows(keep).matrix_from_columns(keep)
         subQuandles.append(subQ)
-        print(subQ)
-        print()
+        # print(subQ)
+        # print()
 
     # Check if all are isomorphic
     for i in range (0, len(subQuandles) - 1):
@@ -136,7 +136,7 @@ def isCohen(quandle):
     return True
 
 
-def verifyAxiom3(quandle) -> bool:
+def verifyAxiom3(quandle, n) -> bool:
     # For all x, y, z, (x * y) * z = (x * z) * (y * z)
     for x in range(0, n):
         for y in range(0, n):
@@ -159,7 +159,7 @@ def inverseOperation(quandle, i, j):
             return r
     return -1
 
-def verifyAxiom2(quandle, i, j):
+def verifyAxiom2(quandle, i, j, n):
     k = quandle[i, j]
 
     # Axiom 2: Ensure operation is bijective (no repeating in columns)
@@ -171,11 +171,11 @@ def verifyAxiom2(quandle, i, j):
     
 
 # Will need to try to explore the most beneficial states first (ie the ones that lead to us filling in many spaces)
-def validCheck(quandle, i, j, filledIn) -> bool:
+def validCheck(quandle, i, j, filledIn, n) -> bool:
     k = quandle[i, j]
 
     # Axiom 2: Ensure operation is bijective (no repeating in columns)
-    if not verifyAxiom2(quandle, i, j):
+    if not verifyAxiom2(quandle, i, j, n):
         return False
     
     # Verify all 3 rules that this will lead to a valid Quandle
@@ -208,7 +208,7 @@ def validCheck(quandle, i, j, filledIn) -> bool:
             quandle[i_a, j_a] = k_a
             filledIn.append((i_a, j_a))
 
-            if not verifyAxiom2(quandle, i_a, j_a):
+            if not verifyAxiom2(quandle, i_a, j_a, n):
                     return False
 
         if i_a_j_a != -1 and k_a == -1:
@@ -218,7 +218,7 @@ def validCheck(quandle, i, j, filledIn) -> bool:
             # else:
             quandle[k, a] = i_a_j_a # Does not respect bijectivity of column
             filledIn.append((k, a))
-            if not verifyAxiom2(quandle, k, a):
+            if not verifyAxiom2(quandle, k, a, n):
                     return False
         
         if i_a_j_a != -1 and k_a != -1:
@@ -340,40 +340,40 @@ def validCheck(quandle, i, j, filledIn) -> bool:
     #     Ensure size of largest orbit * # orbits <= n (order of quandle)
     #     Something with ensuring "finshed" orbits must be factors of n?
 
-    orbits = findOrbits(quandle)
-    finishedSize = 0
-    largestIncomplete = 0
-    completedOrbits = list()
-    for orb in orbits:
-        orbSize = len(orb)
-        if -1 in orb:
-            largestIncomplete = max(largestIncomplete, orbSize - 1)
-        else:
-            completedOrbits.append(orb)
+    # orbits = findOrbits(quandle)
+    # finishedSize = 0
+    # largestIncomplete = 0
+    # completedOrbits = list()
+    # for orb in orbits:
+    #     orbSize = len(orb)
+    #     if -1 in orb:
+    #         largestIncomplete = max(largestIncomplete, orbSize - 1)
+    #     else:
+    #         completedOrbits.append(orb)
 
-            if finishedSize == 0:
-                finishedSize = orbSize
+    #         if finishedSize == 0:
+    #             finishedSize = orbSize
 
-            if orbSize != finishedSize:
-                return False
+    #         if orbSize != finishedSize:
+    #             return False
     
-    # If we don't have any finished orbits
-    if finishedSize == 0:
-        finishedSize = largestFactor
+    # # If we don't have any finished orbits
+    # if finishedSize == 0:
+    #     finishedSize = largestFactor
 
-    # If not a multiple, then not good
-    if n % finishedSize != 0: 
-        return False
+    # # If not a multiple, then not good
+    # if n % finishedSize != 0: 
+    #     return False
 
-    # Ensure all incomplete can still be made to be correct size
-    if largestIncomplete > finishedSize:
-        return False
+    # # Ensure all incomplete can still be made to be correct size
+    # if largestIncomplete > finishedSize:
+    #     return False
     
-    # If we have more than 2 finisihed, check that X\O is isomorphic
-    # This would be a lot of repeated computations!!!!!
-    for i in range(1, len(completedOrbits)):
-        O_1 = completedOrbits[i-1]
-        O_2 = completedOrbits[i]
+    # # If we have more than 2 finisihed, check that X\O is isomorphic
+    # # This would be a lot of repeated computations!!!!!
+    # for i in range(1, len(completedOrbits)):
+    #     O_1 = completedOrbits[i-1]
+    #     O_2 = completedOrbits[i]
 
         # Compute X\O1 and X\O2
 
@@ -383,11 +383,11 @@ def validCheck(quandle, i, j, filledIn) -> bool:
     return True
 
 
-def generate(quandle, i, j):
+def generate(quandle, i, j, n, valid):
     # Base Case: We've reached end of matrix (ie no more positions to fill)
     if (i >= n): 
         # Verify complete table satisfies axiom 3
-        if verifyAxiom3(quandle):
+        if verifyAxiom3(quandle, n):
 
             # # NEED TO FIX. Probably has to do with rules
             # for r in range(0, n):
@@ -409,15 +409,15 @@ def generate(quandle, i, j):
     nextI = i + (1 if (nextJ == 0) else 0) # If we've reached end of the row, go down to next row
 
     if quandle[i,j] != -1: # position i, j has already been filled in by axioms
-        generate(quandle, nextI, nextJ)
+        generate(quandle, nextI, nextJ, n, valid)
         return
 
     filledIn = list()
     for v in range(0, n):
         # Make a list of (i,j) indecies where new values are added
         quandle[i, j] = v
-        if validCheck(quandle, i, j, filledIn): # Fill in and verify potential based on axioms
-            generate(quandle, nextI, nextJ)
+        if validCheck(quandle, i, j, filledIn, n): # Fill in and verify potential based on axioms
+            generate(quandle, nextI, nextJ, n, valid)
 
         while filledIn:
             r, c = filledIn.pop()
@@ -453,6 +453,18 @@ def readOrder9(filename):
 
     # Convert each to a Sage matrix
     return [Matrix(ast.literal_eval(m)) for m in matrices]
+
+
+def saveCohen(filename, cohen):
+    with open(filename, 'w') as file:
+        file.write(f"There are {len(cohen)} Cohen quandles of order {cohen[0].nrows()}\n\n")
+        for i in range(len(cohen)):
+            c = cohen[i]
+            file.write(str(findOrbits(c)))
+            file.write("\n")
+            file.write(str(c))
+            file.write(f"\nIndex: {i + 1}")
+            file.write("\n\n")
 
 
 if __name__ == '__main__':
@@ -508,7 +520,7 @@ if __name__ == '__main__':
 
         # Axiom 1: Generate idempotency along diagonal:
         quandle = Matrix(ZZ, n, n, lambda i, j: i if i == j else -1)
-        generate(quandle, 0, 0)
+        generate(quandle, 0, 0, n, valid)
         
         duration = time.perf_counter() - start_time
 
@@ -537,16 +549,7 @@ if __name__ == '__main__':
 
 
     if args.output != None:
-        with open(args.output, 'w') as file:
-            file.write(f"There are {len(cohen)} Cohen quandles of order {cohen[0].nrows()}\n\n")
-            for i in range(len(cohen)):
-                c = cohen[i]
-                file.write(str(findOrbits(c)))
-                file.write("\n")
-                file.write(str(c))
-                if args.file != None:
-                    file.write(f"\nIndex: {index[i] + 1}")
-                file.write("\n\n")
+        saveCohen(args.output, cohen)
 
     # for c in cohen:
     #     print(c, '\n')
