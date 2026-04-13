@@ -88,60 +88,74 @@ def generateByOrbits(quandle, i, j, n, valid, orbitSize):
 
 
 
+for n in range(6, 10):
+    print(f"Orbits of size {n}")
+    orbits = list()
 
-orbits = list()
-# orbits.append([[1, 1], [2, 2]])
-# orbits.append([[3, 3], [4, 4]])
-# orbits.append([[5, 5], [6, 6]])
+    o = list()
+    for i in range(0, 2*n):
+        if i % n == 0 and i != 0:
+            orbits.append(o)
+            o = list()
 
-# orbits.append([[1, 1, 2], [2, 2, 1], [3, 3, 3]])
-# orbits.append([[4, 4, 5], [5, 5, 4], [6, 6, 6]])
-# orbits.append([[7, 7, 8], [8, 8, 7], [9, 9, 9]])
-# orbits.append([[10, 10, 11], [11, 11, 10], [12, 12, 12]])
-# orbits.append([[13, 13, 14], [14, 14, 13], [15, 15, 15]])
-
-# orbits.append([[1, 3, 2], [3, 2, 1], [2, 1, 3]])
-# orbits.append([[4, 6, 5], [6, 5, 4], [5, 4, 6]])
-# orbits.append([[7, 9, 8], [9, 8, 7], [8, 7, 9]])
-
-# orbits.append([[1, 1, 2], [2, 2, 1], [3, 3, 3]])
-# orbits.append([[4, 6, 5], [6, 5, 4], [5, 4, 6]])
-
-# orbits.append([[1, 1, 1, 1], [2, 2, 2, 3], [3, 3, 3, 2], [4, 4, 4, 4]])
-
-# orbits.append([[1, 1, 2, 2], [2, 2, 1, 1], [4, 4, 3, 3], [3, 3, 4, 4]])
-# orbits.append([[5, 5, 6, 6], [6, 6, 5, 5], [8, 8, 7, 7], [7, 7, 8, 8]])
-
-# orbits.append([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3], [4, 4, 4, 4]])
-# orbits.append([[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]])
-
-orbits.append([[1, 1, 1], [2, 2, 2], [3, 3, 3]])
-orbits.append([[4, 4, 4], [5, 5, 5], [6, 6, 6]])
-orbits.append([[7, 7, 7], [8, 8, 8], [9, 9, 9]])
-orbits.append([[10, 10, 10], [11, 11, 11], [12, 12, 12]])
+        o.append([i + 1 for _ in range(0, n)])
+    orbits.append(o)
 
 
-orbitSize = len(orbits[0])
-n = len(orbits) * len(orbits[0])
+    # orbits.append([[1, 1], [2, 2]])
+    # orbits.append([[3, 3], [4, 4]])
+    # orbits.append([[5, 5], [6, 6]])
 
-quandle = Matrix(ZZ, n, n, lambda i, j: i if i == j else -1)
+    # orbits.append([[1, 1, 2], [2, 2, 1], [3, 3, 3]])
+    # orbits.append([[4, 4, 5], [5, 5, 4], [6, 6, 6]])
+    # orbits.append([[7, 7, 8], [8, 8, 7], [9, 9, 9]])
+    # orbits.append([[10, 10, 11], [11, 11, 10], [12, 12, 12]])
+    # orbits.append([[13, 13, 14], [14, 14, 13], [15, 15, 15]])
 
-for orbit in orbits:
-    for i in range(len(orbit)):
-        row = orbit[i][i]
-        for j in range(len(orbit[i])):
-            quandle[row - 1, orbit[0][0] - 1 + j] = orbit[i][j] - 1
+    # orbits.append([[1, 3, 2], [3, 2, 1], [2, 1, 3]])
+    # orbits.append([[4, 6, 5], [6, 5, 4], [5, 4, 6]])
+    # orbits.append([[7, 9, 8], [9, 8, 7], [8, 7, 9]])
+
+    # orbits.append([[1, 1, 2], [2, 2, 1], [3, 3, 3]])
+    # orbits.append([[4, 6, 5], [6, 5, 4], [5, 4, 6]])
+
+    # orbits.append([[1, 1, 1, 1], [2, 2, 2, 3], [3, 3, 3, 2], [4, 4, 4, 4]])
+
+    # orbits.append([[1, 1, 2, 2], [2, 2, 1, 1], [4, 4, 3, 3], [3, 3, 4, 4]])
+    # orbits.append([[5, 5, 6, 6], [6, 6, 5, 5], [8, 8, 7, 7], [7, 7, 8, 8]])
+
+    # orbits.append([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3], [4, 4, 4, 4]])
+    # orbits.append([[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]])
+
+    # orbits.append([[1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    # orbits.append([[4, 4, 4], [5, 5, 5], [6, 6, 6]])
+    # orbits.append([[7, 7, 7], [8, 8, 8], [9, 9, 9]])
+    # orbits.append([[10, 10, 10], [11, 11, 11], [12, 12, 12]])
 
 
-ones = Matrix(n, n, lambda i, j: 1)
-# quandle = quandle - ones
-# print(quandle)
+    orbitSize = len(orbits[0])
+    n = len(orbits) * len(orbits[0])
 
-valid = list()
-generateByOrbits(quandle, 0, 0, n, valid, orbitSize) # Doesn't respect that I want the rows of the orbits to be only those values
+    quandle = Matrix(ZZ, n, n, lambda i, j: i if i == j else -1)
 
-for q in valid:
-    print(q + ones)
-    if isCohen(q):
-        print("Is Cohen")
+    for orbit in orbits:
+        for i in range(len(orbit)):
+            row = orbit[i][i]
+            for j in range(len(orbit[i])):
+                quandle[row - 1, orbit[0][0] - 1 + j] = orbit[i][j] - 1
+
+
+    ones = Matrix(n, n, lambda i, j: 1)
+    # quandle = quandle - ones
+    # print(quandle)
+
+    valid = list()
+    generateByOrbits(quandle, 0, 0, n, valid, orbitSize) # Doesn't respect that I want the rows of the orbits to be only those values
+
+    for q in valid:
+        print(q + ones)
+        if isCohen(q):
+            print("Is Cohen")
+        print()
+    
     print()
