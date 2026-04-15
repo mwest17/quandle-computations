@@ -1,0 +1,95 @@
+\documentclass{report}
+\pagestyle{empty}
+
+\usepackage{listings}
+\usepackage{fancyvrb}
+\usepackage{verbatim}
+\usepackage{needspace}
+
+
+
+\newcommand{\StartBlock}{%
+	\par
+	\Needspace{10\baselineskip}
+	\begingroup
+	\ttfamily
+	\obeylines
+}
+
+
+
+\newcommand{\EndBlock}{%
+	\par
+	\endgroup
+}
+
+
+
+\newcommand{\ProcessLine}[1]{%
+	\if\relax\detokenize{#1}\relax
+	\par\penalty10000 % discourage break
+	\else
+	#1\par
+	\fi
+}
+
+
+\begin{document}
+\obeylines
+\normalsize
+\section*{Order 3}
+%\lstinputlisting[basicstyle=\ttfamily]{ordered_cohen3.txt}
+\StartBlock
+\ttfamily
+\VerbatimInput[formatcom=\ProcessLine]{ordered_cohen3.txt}
+\EndBlock
+
+
+\section*{Order 4}
+%\lstinputlisting[basicstyle=\ttfamily]{ordered_cohen4.txt}
+\StartBlock
+\VerbatimInput[formatcom=\ProcessLine]{ordered_cohen4.txt}
+\EndBlock
+
+
+\section*{Order 5}
+%\lstinputlisting[basicstyle=\ttfamily]{ordered_cohen5.txt}
+\StartBlock
+\VerbatimInput[formatcom=\ProcessLine]{ordered_cohen5.txt}
+\EndBlock
+
+
+\section*{Order 6}
+\StartBlock
+%\lstinputlisting[basicstyle=\ttfamily]{ordered_cohen6.txt}
+\VerbatimInput[formatcom=\ProcessLine]{ordered_cohen6.txt}
+\EndBlock
+
+
+\section*{Order 7}
+\StartBlock
+%\lstinputlisting[basicstyle=\ttfamily]{ordered_cohen7.txt}
+\VerbatimInput[formatcom=\ProcessLine]{ordered_cohen7.txt}
+\EndBlock
+
+
+\section*{Order 8}
+%\lstinputlisting[basicstyle=\ttfamily]{ordered_cohen8.txt}
+\StartBlock
+\VerbatimInput[formatcom=\ProcessLine]{ordered_cohen8.txt}
+\EndBlock
+
+
+\section*{Order 9}
+%\lstinputlisting[basicstyle=\ttfamily]{ordered_cohen9.txt}
+\StartBlock
+\VerbatimInput[formatcom=\ProcessLine]{ordered_cohen9.txt}
+\EndBlock
+
+
+\section*{Order 10}
+%\lstinputlisting[basicstyle=\ttfamily]{ordered_cohen10.txt}
+\StartBlock
+\VerbatimInput[formatcom=\ProcessLine]{ordered_cohen10.txt}
+\EndBlock
+\end{document}

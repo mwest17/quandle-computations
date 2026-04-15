@@ -2,3 +2,7 @@ input/ListQuandlesOrder*.txt
 *.sage.py
 
 __pycache__/*
+output/*/*.aux
+output/*/*.log
+*.synctex.gz
+
