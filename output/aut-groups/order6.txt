@@ -1,0 +1,116 @@
+Order 6:
+
+Index: 1
+[1 1 1 1 1 1]
+[2 2 2 2 2 2]
+[3 3 3 3 3 3]
+[4 4 4 4 4 4]
+[5 5 5 5 5 5]
+[6 6 6 6 6 6]
+Inner Group:
+Isomorphic to: 1
+Permutation Group with generators [()]
+Orbits: ((1,), (2,), (3,), (4,), (5,), (6,))
+Order: 1
+
+Automorphism Group:
+Isomorphic to: S6
+Orbits: ((1, 2, 3, 4, 5, 6),)
+Order: 720
+
+
+Index: 2
+[1 3 2 1 1 1]
+[3 2 1 2 2 2]
+[2 1 3 3 3 3]
+[4 4 4 4 6 5]
+[5 5 5 6 5 4]
+[6 6 6 5 4 6]
+Inner Group:
+Isomorphic to: S3 x S3
+Permutation Group with generators [(5,6), (4,5), (4,6), (2,3), (1,2), (1,3)]
+Orbits: ((1, 2, 3), (4, 5, 6))
+Order: 36
+
+Automorphism Group:
+Isomorphic to: (S3 x S3) : C2
+Orbits: ((1, 2, 3, 4, 5, 6),)
+Order: 72
+
+
+Index: 3
+[1 1 1 6 6 1]
+[3 2 2 2 2 3]
+[2 3 3 3 3 2]
+[4 5 5 4 4 4]
+[5 4 4 5 5 5]
+[6 6 6 1 1 6]
+Inner Group:
+Isomorphic to: C2 x C2 x C2
+Permutation Group with generators [(4,5), (2,3), (1,6)]
+Orbits: ((1, 6), (2, 3), (4, 5))
+Order: 8
+
+Automorphism Group:
+Isomorphic to: C2 x S4
+Orbits: ((1, 2, 3, 4, 5, 6),)
+Order: 48
+
+
+Index: 4
+[1 6 6 6 1 1]
+[4 2 2 2 4 4]
+[2 3 3 3 2 2]
+[3 4 4 4 3 3]
+[5 1 1 1 5 5]
+[6 5 5 5 6 6]
+Inner Group:
+Isomorphic to: C3 x C3
+Permutation Group with generators [(2,4,3), (1,6,5)]
+Orbits: ((1, 6, 5), (2, 4, 3))
+Order: 9
+
+Automorphism Group:
+Isomorphic to: (S3 x S3) : C2
+Orbits: ((1, 2, 3, 4, 5, 6),)
+Order: 72
+
+
+Index: 5
+[1 5 4 5 4 1]
+[3 2 6 2 6 3]
+[2 6 3 6 3 2]
+[5 4 1 4 1 5]
+[4 1 5 1 5 4]
+[6 3 2 3 2 6]
+Inner Group:
+Isomorphic to: S3
+Permutation Group with generators [(2,3)(4,5), (1,4)(2,6), (1,5)(3,6)]
+Orbits: ((1, 4, 5), (2, 3, 6))
+Order: 6
+
+Automorphism Group:
+Isomorphic to: D6
+Orbits: ((1, 2, 3, 4, 5, 6),)
+Order: 12
+
+
+Index: 6
+[1 6 6 6 6 1]
+[3 2 2 3 3 3]
+[2 3 3 2 2 2]
+[5 5 5 4 4 5]
+[4 4 4 5 5 4]
+[6 1 1 1 1 6]
+Inner Group:
+Isomorphic to: C2 x C2
+Permutation Group with generators [(2,3)(4,5), (1,6)(4,5), (1,6)(2,3)]
+Orbits: ((1, 6), (2, 3), (4, 5))
+Order: 4
+
+Automorphism Group:
+Isomorphic to: C2 x S4
+Orbits: ((1, 2, 3, 4, 5, 6),)
+Order: 48
+
+

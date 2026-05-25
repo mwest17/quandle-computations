@@ -2,7 +2,7 @@ from sage.all import *
 from generateQuandles import * 
 import re
 
-def readCohen(filename):
+def readFile(filename):
     cohen = list()
     matrix_rows = list()
     with open(filename, 'r') as file:
@@ -41,7 +41,7 @@ def reorderByOrbit(quandle):
 if __name__ == "__main__":
     for i in range (3, 10 + 1):
 
-        cohen = readCohen(f"output/cohen{i}.txt")
+        cohen = readFile(f"output/cohen{i}.txt")
         
         
         for c in cohen:

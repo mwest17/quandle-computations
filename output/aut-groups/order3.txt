@@ -1,0 +1,18 @@
+Order 3:
+
+Index: 1
+[1 1 1]
+[2 2 2]
+[3 3 3]
+Inner Group:
+Isomorphic to: 1
+Permutation Group with generators [()]
+Orbits: ((1,), (2,), (3,))
+Order: 1
+
+Automorphism Group:
+Isomorphic to: S3
+Orbits: ((1, 2, 3),)
+Order: 6
+
+

@@ -1,0 +1,36 @@
+Order 4:
+
+Index: 1
+[1 1 1 1]
+[2 2 2 2]
+[3 3 3 3]
+[4 4 4 4]
+Inner Group:
+Isomorphic to: 1
+Permutation Group with generators [()]
+Orbits: ((1,), (2,), (3,), (4,))
+Order: 1
+
+Automorphism Group:
+Isomorphic to: S4
+Orbits: ((1, 2, 3, 4),)
+Order: 24
+
+
+Index: 2
+[1 1 2 2]
+[2 2 1 1]
+[4 4 3 3]
+[3 3 4 4]
+Inner Group:
+Isomorphic to: C2 x C2
+Permutation Group with generators [(3,4), (1,2)]
+Orbits: ((1, 2), (3, 4))
+Order: 4
+
+Automorphism Group:
+Isomorphic to: D4
+Orbits: ((1, 2, 3, 4),)
+Order: 8
+
+
